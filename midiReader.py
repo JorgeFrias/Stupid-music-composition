@@ -72,12 +72,12 @@ def generateDataSet(notes, dataSize):
 
     return {'dataNotes':npDataNotes, 'targetNotes':npTargetNotes,'targetVelocity':npTargetVelocity, 'targetTime':npTargetTime}
 
-def saveMidi(notes):
+def saveMidi(notes, instrument):
     mid = mido.MidiFile()
     track = mido.MidiTrack()
     mid.tracks.append(track)
 
-    track.append(mido.Message('program_change', program=0, time=0))
+    track.append(mido.Message('program_change', program=instrument, time=0))
     for notex in notes:
         track.append(mido.Message('note_on', note=int(notex.note), velocity=int(notex.velocity), time=int(notex.time)))
 
@@ -163,7 +163,7 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes):
 
     return newNotes[len(initNotes):]
 
-def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="random"):
+def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="random", instrument=0):
     allSongsNotes = []
     notesInInput = windowSize
 
@@ -199,15 +199,15 @@ def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="
     notesMdl, velMdl, timeMdl = trainModels(dataDict, models=models)
     print('The gnomes and wizards are working on your song...')
     song = generateNotes(notesMdl, velMdl, timeMdl, length, baseSecuence)
-    realSong = saveMidi(song)
+    realSong = saveMidi(song, instrument)
     return realSong
 
 if __name__ == "__main__":
-    if(len(sys.argv) < 6):
+    if(len(sys.argv) < 7):
         print("\n--- Wrong number of args ---\n")
         print("Usage:\n- 1st arg: Training datasets separated by underscores\n- 2nd arg: Song length\n" +  
               "- 3rd arg: Window size\n- 4th arg: Models separated by underscores\n" + 
-              "- 5th arg: Seed\n\nAvailable models are:\n   gnb, dte, dtg, bnb, rdm, mnb\n" + 
+              "- 5th arg: Seed\n6t arg: Instrument (0-127)\n\nAvailable models are:\n   gnb, dte, dtg, bnb, rdm, mnb\n" + 
               "\nAvailable datasets are:")
         cwd = os.getcwd()  # Current working directory
         composerDir = os.path.join(cwd, "Midi_full")
@@ -222,6 +222,6 @@ if __name__ == "__main__":
     else:
         dataSet = sys.argv[1].split("_")
         models = sys.argv[4].split("_")
-        songName=run(dataSet, int(sys.argv[2]), int(sys.argv[3]), models, sys.argv[5])
+        songName=run(dataSet, int(sys.argv[2]), int(sys.argv[3]), models, sys.argv[5], int(sys.argv[6]))
         print("Your new song is " + songName + ". Enjoy it mai fren!")
 
