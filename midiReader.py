@@ -56,7 +56,11 @@ def genertateDataSet(notes, dataSize):
     :param dataSize: Number of notes to build the training data set
     :return: Dict dataNotes, targetNotes, targetVelocity, targetTime
     '''
-    currentPos = 0                                              # Note to start getting dataSize notes. Next target size notes
+    dataNotes = []
+    targetNotes = []
+    targetVelocity = []
+    targetTime = []
+
     npDataNotes = np.array([])
     npTargetNotes = np.array([])
     npTargetVelocity = np.array([])
@@ -64,15 +68,19 @@ def genertateDataSet(notes, dataSize):
 
     for i in range(len(notes) - (dataSize + 1)):                # Not to go over the end
         # Get data notes
-        for i in range(dataSize):
-            tmpPos = currentPos + i
-            np.append(npDataNotes, [notes[tmpPos].note, notes[tmpPos].velocity, notes[tmpPos].time])
+        tmpNotes = []
+        for j in range(dataSize):
+            tmpPos = i + j
+            tmpNotes.append(notes[tmpPos].note)
+            tmpNotes.append(notes[tmpPos].velocity)
+            tmpNotes.append(notes[tmpPos].time)
+        dataNotes.append(tmpNotes)
 
         # Get target note, vel and time
-        targetPos = currentPos + dataSize
-        np.append(npTargetNotes, notes[targetPos].note)
-        np.append(npTargetVelocity, notes[targetPos].velocity)
-        np.append(npTargetTime, notes[targetPos].time)
+        targetPos = i + dataSize
+        targetNotes.append(notes[targetPos].note)
+        targetVelocity.append(notes[targetPos].velocity)
+        targetTime.append(notes[targetPos].time)
 
     return {'dataNotes':npDataNotes, 'targetNotes':npTargetNotes,'targetVelocity':npTargetVelocity, 'targetTime':npTargetTime}
 
