@@ -100,9 +100,9 @@ def trainModels(dataDict, models = []):
         velMdls.append(velMdl)
         timeMdls.append(timeMdl)
     elif(len(models) == 1):
-        notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=models)
-        velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=models)
-        timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=models)
+        notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=models[0])
+        velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=models[0])
+        timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=models[0])
         notesMdls.append(notesMdl)
         velMdls.append(velMdl)
         timeMdls.append(timeMdl)
@@ -191,6 +191,7 @@ def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="
 
     '''Buld datasets '''                                           # To select how many previous notes to use
     dataDict = generateDataSet(allSongsNotes, notesInInput)
+    print('Working realy hard in composing something really stupid :)')
     notesMdl, velMdl, timeMdl = trainModels(dataDict, models=models)
     song = generateNotes(notesMdl, velMdl, timeMdl, length, baseSecuence)
     realSong = saveMidi(song)
