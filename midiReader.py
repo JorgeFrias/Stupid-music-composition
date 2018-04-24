@@ -194,13 +194,14 @@ def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="
     notesMdl, velMdl, timeMdl = trainModels(dataDict, models=models)
     song = generateNotes(notesMdl, velMdl, timeMdl, length, baseSecuence)
     realSong = saveMidi(song)
+    return realSong
 
 if __name__ == "__main__":
     if(len(sys.argv) < 6):
         print("\n--- Wrong number of args ---\n")
         print("Usage:\n- 1st arg: Training datasets separated by underscores\n- 2nd arg: Song length\n" +  
               "- 3rd arg: Window size\n- 4th arg: Models separated by underscores\n" + 
-              "- 5th arg: Seed\n\nAvailable models are:\n   gnb, dte, ftg, bnb, rdm, mnb\n" + 
+              "- 5th arg: Seed\n\nAvailable models are:\n   gnb, dte, dtg, bnb, rdm, mnb\n" + 
               "\nAvailable datasets are:")
         cwd = os.getcwd()  # Current working directory
         composerDir = os.path.join(cwd, "Midi_full")
