@@ -141,31 +141,6 @@ Params: - Mdls = Bayesian prediction models
                  the size of the accepted input will be specified here
         - multiModel = Use random model from list of models
 """
-<<<<<<< HEAD
-def generateNotes(notesMdl, velMdl, timeMdl, length, initNotes=[], size=0, initNotesFile=''):
-    if(len(initNotes) != 0):
-        baseNotes = initNotes
-    elif(size > 0):
-        baseNotes = initialSecuence(initNotesFile, size)
-
-    size = len(initNotes)
-    newNotes = []
-    for notex in initNotes:
-        newNotes.append(notex)
-    for i in range(length):
-        unlabelled = []
-        for j in range(i, i+size):
-            unlabelled.append(newNotes[j].note)
-            unlabelled.append(newNotes[j].velocity)
-            unlabelled.append(newNotes[j].time)
-
-        npUnlabelled = np.array(unlabelled).reshape(1, -1)
-        n = note(predict(velMdl, npUnlabelled),
-             predict(notesMdl, npUnlabelled),
-             predict(timeMdl, npUnlabelled))
-        newNotes.append(n)
-        
-    return newNotes
 
 def initialSecuence(file:str, numberOfNotes):
     try:
@@ -177,7 +152,6 @@ def initialSecuence(file:str, numberOfNotes):
     except AttributeError:
         print('Initial sequence error')
 
-=======
 def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes=[], size=0, multiModel=False):
     if(len(initNotes) != 0):
         size = len(initNotes)
@@ -210,5 +184,4 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes=[], size=0, mu
 
     return newNotes
 
->>>>>>> origin/master
 run(True)
