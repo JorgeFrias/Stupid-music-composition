@@ -108,8 +108,11 @@ def trainModels(dataDict, models = []):
         timeMdls.append(timeMdl)
     else:
         for model in models:
+            print("Training notes model for " + model)
             notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=model)
+            print("Training velocity model for " + model)
             velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=model)
+            print("Training time model for " + model)
             timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=model)
             notesMdls.append(notesMdl)
             velMdls.append(velMdl)
@@ -126,7 +129,7 @@ Params: - Mdls = Bayesian prediction models
         - multiModel = Use random model from list of models
 """
 
-def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes, multiModel=False):
+def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes):
 
     newNotes = []
     if(len(initNotes) != 0):
@@ -134,6 +137,7 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes, multiModel=Fa
         for notex in initNotes:
             newNotes.append(notex)
         for i in range(length):
+            print("note" + str(i) + "generated")
             unlabelled = []
             for j in range(i, i+size):
                 unlabelled.append(newNotes[j].note)
@@ -141,7 +145,7 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes, multiModel=Fa
                 unlabelled.append(newNotes[j].time)
 
             npUnlabelled = np.array(unlabelled).reshape(1, -1)
-            if(multiModel):
+            if(len(velMdls) > 1):
                 velMdl = velMdls[np.random.randint(len(velMdls))]
                 notesMdl = notesMdls[np.random.randint(len(notesMdls))]
                 timeMdl = timeMdls[np.random.randint(len(timeMdls))]
@@ -191,8 +195,9 @@ def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="
 
     '''Buld datasets '''                                           # To select how many previous notes to use
     dataDict = generateDataSet(allSongsNotes, notesInInput)
-    print('Working realy hard in composing something really stupid :)')
+    print("Applying Mozart's DNA to our models...")
     notesMdl, velMdl, timeMdl = trainModels(dataDict, models=models)
+    print('The gnomes and wizards are working on your song...')
     song = generateNotes(notesMdl, velMdl, timeMdl, length, baseSecuence)
     realSong = saveMidi(song)
     return realSong
