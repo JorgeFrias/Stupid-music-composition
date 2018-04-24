@@ -42,17 +42,17 @@ def run(test=False):
             songPath = os.path.join(cwd, midiDB, composer, song)
             print('> Reading ' + composer + ': ' + song)
             mid = mido.MidiFile(songPath)                       # MIDI info
-            allSongsNotes.extend(readTrack(mid, False))                # Append new notes
+            allSongsNotes.extend(readTrack(mid, False))         # Append new notes
 
     '''Buld datasets '''
     notesInInput = 24                                            # To select how many previous notes to use
     dataDict = generateDataSet(allSongsNotes, notesInInput)
-    notesMdl, velMdl, timeMdl = trainModels(dataDict)
+    notesMdl, velMdl, timeMdl = trainModels(dataDict, models=["gnb", "dte", "dtg", "bnb", "rdm", "mnb"])
     # TODO: init notes, length
     song = generateNotes(notesMdl, velMdl, timeMdl, 100, initNotes=[allSongsNotes[0], allSongsNotes[1], allSongsNotes[2], allSongsNotes[3], allSongsNotes[4], allSongsNotes[5],\
                                                                     allSongsNotes[6], allSongsNotes[7], allSongsNotes[8], allSongsNotes[9], allSongsNotes[10], allSongsNotes[11],\
                                                                     allSongsNotes[12], allSongsNotes[13], allSongsNotes[14], allSongsNotes[15], allSongsNotes[16], allSongsNotes[17],\
-                                                                    allSongsNotes[18], allSongsNotes[19], allSongsNotes[20], allSongsNotes[21], allSongsNotes[22], allSongsNotes[23]])
+                                                                    allSongsNotes[18], allSongsNotes[19], allSongsNotes[20], allSongsNotes[21], allSongsNotes[22], allSongsNotes[23]], multiModel=True)
     realSong = saveMidi(song)
 
 def generateDataSet(notes, dataSize):
@@ -174,9 +174,9 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes=[], size=0, mu
                          predict(notesMdl, npUnlabelled),
                          predict(timeMdl, npUnlabelled))
             else:
-                n = note(predict(velMdls, npUnlabelled),
-                         predict(notesMdls, npUnlabelled),
-                         predict(timeMdls, npUnlabelled))
+                n = note(predict(velMdls[0], npUnlabelled),
+                         predict(notesMdls[0], npUnlabelled),
+                         predict(timeMdls[0], npUnlabelled))
             newNotes.append(n)
     else:
         # Generate a random sequence of initial notes.

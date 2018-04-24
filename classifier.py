@@ -16,7 +16,8 @@ def train(data, target, model="gnb", alpha=1.0):
 	elif(model == "rdm"):
 		mdl = DummyClassifier(strategy="uniform")
 	else:
-		print("Model not available...\nTry 'gnb', 'mnb', 'bnb', 'dtg', 'dte' or 'rdm")
+		print("Model not available...\nTry 'gnb', 'mnb', 'bnb', 'dtg', 'dte' or 'rdm'")
+		quit()
 	mdl.fit(data, target)
 	return mdl
 
