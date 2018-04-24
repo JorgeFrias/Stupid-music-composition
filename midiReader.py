@@ -1,8 +1,6 @@
 import mido
 import os
 import numpy as np
-from idna import alabel
-
 
 class note():
     def __init__(self, note : int, velocity : int, time : int):
@@ -25,7 +23,6 @@ def readTrack(mid : mido.MidiFile, printInfo = True):
                 except AttributeError:
                     if printInfo:
                         print('> No attribute channel, note or velocity')
-
     return notes
 
 def run(test=False):
@@ -60,11 +57,6 @@ def genertateDataSet(notes, dataSize):
     targetNotes = []
     targetVelocity = []
     targetTime = []
-
-    npDataNotes = np.array([])
-    npTargetNotes = np.array([])
-    npTargetVelocity = np.array([])
-    npTargetTime = np.array([])
 
     for i in range(len(notes) - (dataSize + 1)):                # Not to go over the end
         # Get data notes
@@ -103,6 +95,5 @@ def saveMidi(notes):
     import time
     timeStr = time.strftime("%Y%m%d-%H%M%S")
     mid.save('generatedSongs/gen_' + timeStr + '.mid')
-
 
 run(True)
