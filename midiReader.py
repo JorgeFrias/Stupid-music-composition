@@ -82,6 +82,11 @@ def genertateDataSet(notes, dataSize):
         targetVelocity.append(notes[targetPos].velocity)
         targetTime.append(notes[targetPos].time)
 
+    npDataNotes = np.array(dataNotes)
+    npTargetNotes = np.array(targetNotes)
+    npTargetVelocity = np.array(targetVelocity)
+    npTargetTime = np.array(targetTime)
+
     return {'dataNotes':npDataNotes, 'targetNotes':npTargetNotes,'targetVelocity':npTargetVelocity, 'targetTime':npTargetTime}
 
 
