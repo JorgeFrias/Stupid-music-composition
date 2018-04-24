@@ -28,12 +28,14 @@ def readTrack(mid : mido.MidiFile, printInfo = True):
 
     return notes
 
-def run():
+def run(test=False):
     allSongsNotes = []
 
     ''' Fetch all '''
     cwd = os.getcwd()  # Current working directory
-    midiDB = 'Midi'
+    midiDB = 'Midi_full'
+    if test:
+        midiDB = 'Midi_test'
     composerDir = os.path.join(cwd, midiDB)
     for composer in os.listdir(composerDir):                    # iterate over artists
         compSongs = os.path.join(cwd, midiDB, composer)
@@ -76,4 +78,4 @@ def genertateDataSet(notes, dataSize):
 
 
 
-run()
+run(True)
