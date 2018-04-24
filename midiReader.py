@@ -1,9 +1,8 @@
 import mido
-import os
+import os, sys
 import time
 import numpy as np
 from classifier import train, predict
-import random
 
 class note():
     def __init__(self, note : int, velocity : int, time : int):
@@ -27,50 +26,6 @@ def readTrack(mid : mido.MidiFile, printInfo = True):
                     if printInfo:
                         print('> No attribute channel, note or velocity')
     return notes
-
-def run(test=False):
-    allSongsNotes = []
-    modelSongsNo = 20
-
-    ''' Fetch all '''
-    midiDB = 'Midi_full'
-    midiSeeds = 'Midi_seed'
-    if test:
-        midiDB = 'Midi_test'
-
-    cwd = os.getcwd()  # Current working directory
-    composerDir = os.path.join(cwd, midiDB)
-    for composer in os.listdir(composerDir):                    # iterate over artists
-        compSongs = os.path.join(cwd, midiDB, composer)
-        for song in os.listdir(compSongs):                      # iterate over songs
-            songPath = os.path.join(cwd, midiDB, composer, song)
-            print('> Reading ' + composer + ': ' + song)
-            mid = mido.MidiFile(songPath)                       # MIDI info
-            allSongsNotes.extend(readTrack(mid, False))         # Append new notes
-
-    # Get random seed
-    seedSongs = os.path.join(cwd, midiSeeds)
-    seedSongList = os.listdir(seedSongs)
-    songIndex = random.randint(1, len(seedSongList))                        # Ge random song
-    song = seedSongList[songIndex]
-    songPath = os.path.join(cwd, midiSeeds, song)
-    baseSecuence = initialSecuence(songPath, modelSongsNo)
-
-
-    '''Buld datasets '''
-    notesInInput = 24                                            # To select how many previous notes to use
-    dataDict = generateDataSet(allSongsNotes, notesInInput)
-    notesMdl, velMdl, timeMdl = trainModels(dataDict, models=["gnb", "dte", "dtg", "bnb", "rdm", "mnb"])
-    # TODO: init notes, length
-<<<<<<< HEAD
-    song = generateNotes(notesMdl, velMdl, timeMdl, 100, initNotes=[allSongsNotes[0], allSongsNotes[1], allSongsNotes[2], allSongsNotes[3], allSongsNotes[4], allSongsNotes[5],\
-                                                                    allSongsNotes[6], allSongsNotes[7], allSongsNotes[8], allSongsNotes[9], allSongsNotes[10], allSongsNotes[11],\
-                                                                    allSongsNotes[12], allSongsNotes[13], allSongsNotes[14], allSongsNotes[15], allSongsNotes[16], allSongsNotes[17],\
-                                                                    allSongsNotes[18], allSongsNotes[19], allSongsNotes[20], allSongsNotes[21], allSongsNotes[22], allSongsNotes[23]], multiModel=True)
-=======
-    song = generateNotes(notesMdl, velMdl, timeMdl, 100, baseSecuence)
->>>>>>> origin/master
-    realSong = saveMidi(song)
 
 def initialSecuence(file:str, numberOfNotes):
     try:
@@ -129,7 +84,9 @@ def saveMidi(notes):
     # I think is not needed
     # track.append(mido.Message('note_off', note=64, velocity=127, time=32))
     timeStr = time.strftime("%Y%m%d-%H%M%S")
-    mid.save('generatedSongs/gen_' + timeStr + '.mid')
+    songName = 'generatedSongs/gen_' + timeStr + '.mid'
+    mid.save(songName)
+    return songName
 
 def trainModels(dataDict, models = []):
     notesMdls = []
@@ -200,6 +157,64 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes, multiModel=Fa
         # Generate a random sequence of initial notes.
         print("Error!")
 
-    return newNotes
+    return newNotes[len(initNotes):]
 
-run(True)
+def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="random"):
+    allSongsNotes = []
+    notesInInput = windowSize
+
+    ''' Fetch all '''
+    midiDB = 'Midi_full'
+    midiSeeds = 'Midi_seed'
+
+    cwd = os.getcwd()  # Current working directory
+    composerDir = os.path.join(cwd, midiDB)
+    for composer in dataSet:                    # iterate over artists
+        compSongs = os.path.join(cwd, midiDB, composer)
+        for song in os.listdir(compSongs):                      # iterate over songs
+            songPath = os.path.join(cwd, midiDB, composer, song)
+            print('> Reading ' + composer + ': ' + song)
+            mid = mido.MidiFile(songPath)                       # MIDI info
+            allSongsNotes.extend(readTrack(mid, False))         # Append new notes
+
+    # Get random seed
+    seedSongs = os.path.join(cwd, midiSeeds)
+    seedSongList = os.listdir(seedSongs)
+    if(seed == "random"):
+        songIndex = np.random.randint(len(seedSongList))                     # Ge random song
+        song = seedSongList[songIndex]
+        songPath = os.path.join(cwd, midiSeeds, song)
+    else:
+        songPath = os.path.join(cwd, midiSeeds, seed)
+    baseSecuence = initialSecuence(songPath, notesInInput)
+
+
+    '''Buld datasets '''                                           # To select how many previous notes to use
+    dataDict = generateDataSet(allSongsNotes, notesInInput)
+    notesMdl, velMdl, timeMdl = trainModels(dataDict, models=models)
+    song = generateNotes(notesMdl, velMdl, timeMdl, length, baseSecuence)
+    realSong = saveMidi(song)
+
+if __name__ == "__main__":
+    if(len(sys.argv) < 6):
+        print("\n--- Wrong number of args ---\n")
+        print("Usage:\n- 1st arg: Training datasets separated by underscores\n- 2nd arg: Song length\n" +  
+              "- 3rd arg: Window size\n- 4th arg: Models separated by underscores\n" + 
+              "- 5th arg: Seed\n\nAvailable models are:\n   gnb, dte, ftg, bnb, rdm, mnb\n" + 
+              "\nAvailable datasets are:")
+        cwd = os.getcwd()  # Current working directory
+        composerDir = os.path.join(cwd, "Midi_full")
+        for composer in os.listdir(composerDir):                    # iterate over artists
+            print(composer, end=" ")
+        print("\n\nAvailable seeds are:")
+        composerDir = os.path.join(cwd, "Midi_seed")
+        for composer in os.listdir(composerDir):                    # iterate over artists
+            print(composer, end=" ")
+        print("random")
+        quit()
+    else:
+        dataSet = sys.argv[1].split("_")
+        models = sys.argv[4].split("_")
+        songName=run(dataSet, int(sys.argv[2]), int(sys.argv[3]), models, sys.argv[5])
+        print("Your new song is " + songName + ". Enjoy it mai fren!")
+
