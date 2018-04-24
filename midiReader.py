@@ -118,29 +118,39 @@ Params: - Mdls = Bayesian prediction models
         - size = in case a random sequence of initial notes is wanted
                  the size of the accepted input will be specified here
 """
-def generateNotes(notesMdl, velMdl, timeMdl, length, initNotes=[], size=0):
+def generateNotes(notesMdl, velMdl, timeMdl, length, initNotes=[], size=0, initNotesFile=''):
     if(len(initNotes) != 0):
-        size = len(initNotes)
-        newNotes = []
-        for notex in initNotes:
-            newNotes.append(notex)
-        for i in range(length):
-            unlabelled = []
-            for j in range(i, i+size):
-                unlabelled.append(newNotes[j].note)
-                unlabelled.append(newNotes[j].velocity)
-                unlabelled.append(newNotes[j].time)
+        baseNotes = initNotes
+    elif(size > 0):
+        baseNotes = initialSecuence(initNotesFile, size)
 
-            npUnlabelled = np.array(unlabelled).reshape(1, -1)
-            n = note(predict(velMdl, npUnlabelled),
-                 predict(notesMdl, npUnlabelled),
-                 predict(timeMdl, npUnlabelled))
-            newNotes.append(n)
-    else:
-        # Generate a random sequence of initial notes.
-        print("Not implemented yet...")
+    size = len(initNotes)
+    newNotes = []
+    for notex in initNotes:
+        newNotes.append(notex)
+    for i in range(length):
+        unlabelled = []
+        for j in range(i, i+size):
+            unlabelled.append(newNotes[j].note)
+            unlabelled.append(newNotes[j].velocity)
+            unlabelled.append(newNotes[j].time)
 
+        npUnlabelled = np.array(unlabelled).reshape(1, -1)
+        n = note(predict(velMdl, npUnlabelled),
+             predict(notesMdl, npUnlabelled),
+             predict(timeMdl, npUnlabelled))
+        newNotes.append(n)
+        
     return newNotes
 
+def initialSecuence(file:str, numberOfNotes):
+    try:
+        mid = mido.MidiFile(file)  # MIDI info
+        notes = readTrack(mid, False)
+        notes = notes[:numberOfNotes]
+
+        return notes
+    except AttributeError:
+        print('Initial sequence error')
 
 run(True)
