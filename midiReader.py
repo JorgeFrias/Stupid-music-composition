@@ -3,6 +3,7 @@ import os
 import time
 import numpy as np
 from classifier import train, predict
+import random
 
 class note():
     def __init__(self, note : int, velocity : int, time : int):
@@ -29,12 +30,15 @@ def readTrack(mid : mido.MidiFile, printInfo = True):
 
 def run(test=False):
     allSongsNotes = []
+    modelSongsNo = 20
 
     ''' Fetch all '''
-    cwd = os.getcwd()  # Current working directory
     midiDB = 'Midi_full'
+    midiSeeds = 'Midi_seed'
     if test:
         midiDB = 'Midi_test'
+
+    cwd = os.getcwd()  # Current working directory
     composerDir = os.path.join(cwd, midiDB)
     for composer in os.listdir(composerDir):                    # iterate over artists
         compSongs = os.path.join(cwd, midiDB, composer)
@@ -44,16 +48,32 @@ def run(test=False):
             mid = mido.MidiFile(songPath)                       # MIDI info
             allSongsNotes.extend(readTrack(mid, False))                # Append new notes
 
+    # Get random seed
+    seedSongs = os.path.join(cwd, midiSeeds)
+    seedSongList = os.listdir(seedSongs)
+    songIndex = random.randint(1, len(seedSongList))                        # Ge random song
+    song = seedSongList[songIndex]
+    songPath = os.path.join(cwd, midiSeeds, song)
+    baseSecuence = initialSecuence(songPath, modelSongsNo)
+
+
     '''Buld datasets '''
     notesInInput = 24                                            # To select how many previous notes to use
     dataDict = generateDataSet(allSongsNotes, notesInInput)
     notesMdl, velMdl, timeMdl = trainModels(dataDict)
     # TODO: init notes, length
-    song = generateNotes(notesMdl, velMdl, timeMdl, 100, initNotes=[allSongsNotes[0], allSongsNotes[1], allSongsNotes[2], allSongsNotes[3], allSongsNotes[4], allSongsNotes[5],\
-                                                                    allSongsNotes[6], allSongsNotes[7], allSongsNotes[8], allSongsNotes[9], allSongsNotes[10], allSongsNotes[11],\
-                                                                    allSongsNotes[12], allSongsNotes[13], allSongsNotes[14], allSongsNotes[15], allSongsNotes[16], allSongsNotes[17],\
-                                                                    allSongsNotes[18], allSongsNotes[19], allSongsNotes[20], allSongsNotes[21], allSongsNotes[22], allSongsNotes[23]])
+    song = generateNotes(notesMdl, velMdl, timeMdl, 100, baseSecuence)
     realSong = saveMidi(song)
+
+def initialSecuence(file:str, numberOfNotes):
+    try:
+        mid = mido.MidiFile(file)  # MIDI info
+        notes = readTrack(mid, False)
+        notes = notes[:numberOfNotes]
+
+        return notes
+    except AttributeError:
+        print('Initial sequence error')
 
 def generateDataSet(notes, dataSize):
     '''
@@ -142,20 +162,11 @@ Params: - Mdls = Bayesian prediction models
         - multiModel = Use random model from list of models
 """
 
-def initialSecuence(file:str, numberOfNotes):
-    try:
-        mid = mido.MidiFile(file)  # MIDI info
-        notes = readTrack(mid, False)
-        notes = notes[:numberOfNotes]
+def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes, multiModel=False):
 
-        return notes
-    except AttributeError:
-        print('Initial sequence error')
-
-def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes=[], size=0, multiModel=False):
+    newNotes = []
     if(len(initNotes) != 0):
         size = len(initNotes)
-        newNotes = []
         for notex in initNotes:
             newNotes.append(notex)
         for i in range(length):
@@ -180,7 +191,7 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes=[], size=0, mu
             newNotes.append(n)
     else:
         # Generate a random sequence of initial notes.
-        print("Not implemented yet...")
+        print("Error!")
 
     return newNotes
 
