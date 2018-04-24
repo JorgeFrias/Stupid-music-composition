@@ -137,7 +137,7 @@ def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes):
         for notex in initNotes:
             newNotes.append(notex)
         for i in range(length):
-            print("note" + str(i) + "generated")
+            print("note " + str(i) + " generated")
             unlabelled = []
             for j in range(i, i+size):
                 unlabelled.append(newNotes[j].note)
