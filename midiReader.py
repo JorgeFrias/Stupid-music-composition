@@ -89,6 +89,20 @@ def genertateDataSet(notes, dataSize):
 
     return {'dataNotes':npDataNotes, 'targetNotes':npTargetNotes,'targetVelocity':npTargetVelocity, 'targetTime':npTargetTime}
 
+def saveMidi(notes):
+    mid = mido.MidiFile()
+    track = mido.MidiTrack()
+    mid.tracks.append(track)
+
+    track.append(mido.Message('program_change', program=12, time=0))
+    for note in notes:
+        track.append(mido.Message('note_on', note=note.note, velocity=note.velocity, time=note.time))
+
+    # I think is not needed
+    # track.append(mido.Message('note_off', note=64, velocity=127, time=32))
+    import time
+    timeStr = time.strftime("%Y%m%d-%H%M%S")
+    mid.save('generatedSongs/gen_' + timeStr + '.mid')
 
 
 run(True)
