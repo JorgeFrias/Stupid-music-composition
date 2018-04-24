@@ -104,11 +104,33 @@ def saveMidi(notes):
     timeStr = time.strftime("%Y%m%d-%H%M%S")
     mid.save('generatedSongs/gen_' + timeStr + '.mid')
 
-def trainModels(dataDict, model = "gnb"):
-    notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=model)
-    velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=model)
-    timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=model)
-    return notesMdl, velMdl, timeMdl
+def trainModels(dataDict, models = []):
+    notesMdls = []
+    velMdls = []
+    timeMdls = []
+    if(len(models) == 0):
+        notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'])
+        velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'])
+        timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'])
+        notesMdls.append(notesMdl)
+        velMdls.append(velMdl)
+        timeMdls.append(timeMdl)
+    elif(len(models) == 1):
+        notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=models)
+        velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=models)
+        timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=models)
+        notesMdls.append(notesMdl)
+        velMdls.append(velMdl)
+        timeMdls.append(timeMdl)
+    else:
+        for model in models:
+            notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=model)
+            velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=model)
+            timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=model)
+            notesMdls.append(notesMdl)
+            velMdls.append(velMdl)
+            timeMdls.append(timeMdl)
+    return notesMdls, velMdls, timeMdls
 
 """
 Params: - Mdls = Bayesian prediction models
@@ -117,7 +139,9 @@ Params: - Mdls = Bayesian prediction models
                       size as the accepted input size of the model
         - size = in case a random sequence of initial notes is wanted
                  the size of the accepted input will be specified here
+        - multiModel = Use random model from list of models
 """
+<<<<<<< HEAD
 def generateNotes(notesMdl, velMdl, timeMdl, length, initNotes=[], size=0, initNotesFile=''):
     if(len(initNotes) != 0):
         baseNotes = initNotes
@@ -153,4 +177,38 @@ def initialSecuence(file:str, numberOfNotes):
     except AttributeError:
         print('Initial sequence error')
 
+=======
+def generateNotes(notesMdls, velMdls, timeMdls, length, initNotes=[], size=0, multiModel=False):
+    if(len(initNotes) != 0):
+        size = len(initNotes)
+        newNotes = []
+        for notex in initNotes:
+            newNotes.append(notex)
+        for i in range(length):
+            unlabelled = []
+            for j in range(i, i+size):
+                unlabelled.append(newNotes[j].note)
+                unlabelled.append(newNotes[j].velocity)
+                unlabelled.append(newNotes[j].time)
+
+            npUnlabelled = np.array(unlabelled).reshape(1, -1)
+            if(multiModel):
+                velMdl = velMdls[np.random.randint(len(velMdls))]
+                notesMdl = notesMdls[np.random.randint(len(notesMdls))]
+                timeMdl = timeMdls[np.random.randint(len(timeMdls))]
+                n = note(predict(velMdl, npUnlabelled),
+                         predict(notesMdl, npUnlabelled),
+                         predict(timeMdl, npUnlabelled))
+            else:
+                n = note(predict(velMdls, npUnlabelled),
+                         predict(notesMdls, npUnlabelled),
+                         predict(timeMdls, npUnlabelled))
+            newNotes.append(n)
+    else:
+        # Generate a random sequence of initial notes.
+        print("Not implemented yet...")
+
+    return newNotes
+
+>>>>>>> origin/master
 run(True)
