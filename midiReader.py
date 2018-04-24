@@ -1,6 +1,8 @@
 import mido
 import os
+import time
 import numpy as np
+from naiveBayes import train, predict
 
 class note():
     def __init__(self, note : int, velocity : int, time : int):
@@ -44,9 +46,13 @@ def run(test=False):
 
     '''Buld datasets '''
     notesInInput = 3                                            # To select how many previous notes to use
-    genertateDataSet(allSongsNotes, notesInInput)
+    dataDict = generateDataSet(allSongsNotes, notesInInput)
+    notesMdl, velMdl, timeMdl = trainModels(dataDict)
+    # TODO: init notes, length
+    song = generateNotes(notesMdl, velMdl, timeMdl, 20, initNotes=[allSongsNotes[0], allSongsNotes[1], allSongsNotes[2]], size=3)
+    realSong = saveMidi(song)
 
-def genertateDataSet(notes, dataSize):
+def generateDataSet(notes, dataSize):
     '''
     Creates the nunmpy arrays for sklearn naive_bayes
     :param notes: The array with notes obj
@@ -87,13 +93,51 @@ def saveMidi(notes):
     mid.tracks.append(track)
 
     track.append(mido.Message('program_change', program=12, time=0))
-    for note in notes:
-        track.append(mido.Message('note_on', note=note.note, velocity=note.velocity, time=note.time))
+    for notex in notes:
+        track.append(mido.Message('note_on', note=int(notex.note), velocity=int(notex.velocity), time=int(notex.time)))
 
     # I think is not needed
     # track.append(mido.Message('note_off', note=64, velocity=127, time=32))
-    import time
     timeStr = time.strftime("%Y%m%d-%H%M%S")
     mid.save('generatedSongs/gen_' + timeStr + '.mid')
 
-run(True)
+def trainModels(dataDict, model = "gnb"):
+    notesMdl = train(dataDict['dataNotes'], dataDict['targetNotes'], model=model)
+    velMdl = train(dataDict['dataNotes'], dataDict['targetVelocity'], model=model)
+    timeMdl = train(dataDict['dataNotes'], dataDict['targetTime'], model=model)
+    return notesMdl, velMdl, timeMdl
+
+"""
+Params: - Mdls = Bayesian prediction models
+        - length = length of the song we want
+        - initNotes = initial notes of the song, it has to be the same
+                      size as the accepted input size of the model
+        - size = in case a random sequence of initial notes is wanted
+                 the size of the accepted input will be specified here
+"""
+def generateNotes(notesMdl, velMdl, timeMdl, length, initNotes=[], size=0):
+    if(len(initNotes) != 0):
+        size = len(initNotes)
+        newNotes = []
+        for notex in initNotes:
+            newNotes.append(notex)
+        for i in range(length):
+            unlabelled = []
+            for j in range(i, i+size):
+                unlabelled.append(newNotes[j].note)
+                unlabelled.append(newNotes[j].velocity)
+                unlabelled.append(newNotes[j].time)
+
+            npUnlabelled = np.array(unlabelled).reshape(1, -1)
+            n = note(predict(velMdl, npUnlabelled),
+                 predict(notesMdl, npUnlabelled),
+                 predict(timeMdl, npUnlabelled))
+            newNotes.append(n)
+    else:
+        # Generate a random sequence of initial notes.
+        print("Not implemented yet...")
+
+    return newNotes
+
+
+run(False)
