@@ -204,16 +204,21 @@ def run(dataSet=["Beethoven"], length=100, windowSize=20, models=["gnb"], seed="
 if __name__ == "__main__":
     if(len(sys.argv) < 8):
         print("\n--- Wrong number of args ---\n")
-        print("Usage:\n- 1st arg: Training datasets separated by underscores\n- 2nd arg: Song length\n" +  
+        print("Usage:\n- 1st arg: Training datasets separated by underscores\n" +
+              "- 2nd arg: Song length\n" +
               "- 3rd arg: Window size\n- 4th arg: Models separated by underscores\n" + 
-              "- 5th arg: Seed\n6t arg: Instrument [0-127]\n7th arg: Speed [50 (Fast) - 1400 (Slow)]\n" + 
-              "\nAvailable models are:\n   gnb, dte, dtg, bnb, rdm, mnb\n" + 
-              "\nAvailable datasets are:")
+              "- 5th arg: Seed\n" +
+              "- 6t arg: Instrument [0-127]\n" +
+              "- 7th arg: Speed [50 (Fast) - 1400 (Slow)]\n" +
+              "\nAvailable models are:\n" +
+              "-> gnb, mnb, bnb, dte, dtg, rdm\n" +
+              "\nAvailable datasets are: \n"
+              "-> ", end="")
         cwd = os.getcwd()  # Current working directory
         composerDir = os.path.join(cwd, "Midi_full")
         for composer in os.listdir(composerDir):                    # iterate over artists
             print(composer, end=" ")
-        print("\n\nAvailable seeds are:")
+        print("\n\nAvailable seeds are:\n-> ", end='')
         composerDir = os.path.join(cwd, "Midi_seed")
         for composer in os.listdir(composerDir):                    # iterate over artists
             print(composer, end=" ")
