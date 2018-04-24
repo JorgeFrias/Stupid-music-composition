@@ -2,7 +2,7 @@ import mido
 import os
 import time
 import numpy as np
-from naiveBayes import train, predict
+from classifier import train, predict
 
 class note():
     def __init__(self, note : int, velocity : int, time : int):
@@ -45,11 +45,14 @@ def run(test=False):
             allSongsNotes.extend(readTrack(mid, False))                # Append new notes
 
     '''Buld datasets '''
-    notesInInput = 3                                            # To select how many previous notes to use
+    notesInInput = 24                                            # To select how many previous notes to use
     dataDict = generateDataSet(allSongsNotes, notesInInput)
     notesMdl, velMdl, timeMdl = trainModels(dataDict)
     # TODO: init notes, length
-    song = generateNotes(notesMdl, velMdl, timeMdl, 20, initNotes=[allSongsNotes[0], allSongsNotes[1], allSongsNotes[2]], size=3)
+    song = generateNotes(notesMdl, velMdl, timeMdl, 100, initNotes=[allSongsNotes[0], allSongsNotes[1], allSongsNotes[2], allSongsNotes[3], allSongsNotes[4], allSongsNotes[5],\
+                                                                    allSongsNotes[6], allSongsNotes[7], allSongsNotes[8], allSongsNotes[9], allSongsNotes[10], allSongsNotes[11],\
+                                                                    allSongsNotes[12], allSongsNotes[13], allSongsNotes[14], allSongsNotes[15], allSongsNotes[16], allSongsNotes[17],\
+                                                                    allSongsNotes[18], allSongsNotes[19], allSongsNotes[20], allSongsNotes[21], allSongsNotes[22], allSongsNotes[23]])
     realSong = saveMidi(song)
 
 def generateDataSet(notes, dataSize):
@@ -92,7 +95,7 @@ def saveMidi(notes):
     track = mido.MidiTrack()
     mid.tracks.append(track)
 
-    track.append(mido.Message('program_change', program=12, time=0))
+    track.append(mido.Message('program_change', program=0, time=0))
     for notex in notes:
         track.append(mido.Message('note_on', note=int(notex.note), velocity=int(notex.velocity), time=int(notex.time)))
 
@@ -140,4 +143,4 @@ def generateNotes(notesMdl, velMdl, timeMdl, length, initNotes=[], size=0):
     return newNotes
 
 
-run(False)
+run(True)
